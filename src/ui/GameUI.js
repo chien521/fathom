@@ -46,11 +46,11 @@ export class GameUI {
 		delete button.dataset.secondaryHover;
 	}
 
-	showTitle(onDive, onConnect, onRecords, viverseState) {
+	showTitle(onDive, onConnect, onRecords, viverseState, controlHint) {
 		const connectLabel = viverseState?.status === 'logged_in' ? 'viverse connected' : 'connect viverse';
 		const isMobileLayout = window.matchMedia('(max-width: 767px)').matches;
 		const titleOffset = isMobileLayout ? '-25vh' : '-30vh';
-		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="text-align:center;transform:translateY(${titleOffset})"><h1 style="margin:0;color:${PALETTE.uiAccent};font-family:Georgia, 'Times New Roman', serif;font-size:56px;font-weight:normal">fathom</h1><p style="margin:12px 0 20px">tap / press space to dive</p><button data-action="dive" style="${primaryButtonStyle}">dive</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button><button data-action="records" style="${secondaryButtonStyle}">records</button></p></section></div>`;
+		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="text-align:center;transform:translateY(${titleOffset})"><h1 style="margin:0;color:${PALETTE.uiAccent};font-family:Georgia, 'Times New Roman', serif;font-size:56px;font-weight:normal">fathom</h1><p style="margin:12px 0;color:${PALETTE.uiText};font-size:14px">${escapeHtml(controlHint)}</p><p style="margin:0 0 20px">tap / press space to dive</p><button data-action="dive" style="${primaryButtonStyle}">dive</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button><button data-action="records" style="${secondaryButtonStyle}">records</button></p></section></div>`;
 		this.root.querySelector('[data-action="dive"]').addEventListener('click', onDive);
 		this.root.querySelector('[data-action="viverse"]').addEventListener('click', onConnect);
 		this.root.querySelector('[data-action="records"]').addEventListener('click', onRecords);
@@ -60,10 +60,9 @@ export class GameUI {
 		}, { once: true });
 	}
 
-	showRun(depth, stairs, paused, controlHint, onResume, onRestart) {
+	showRun(depth, stairs, paused, onResume, onRestart) {
 		if (!this.hud) {
-			const hint = controlHint ? `<div data-hint style="position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:14px;text-align:center;white-space:nowrap;text-shadow:2px 2px ${PALETTE.uiPanel}">${escapeHtml(controlHint)}</div>` : '';
-			this.root.innerHTML = `<div data-hud style="font-size:22px;white-space:pre-line"></div><button data-action="pause" type="button" aria-label="Pause" title="Pause" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:48px;height:48px;padding:0;border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:26px;line-height:1;pointer-events:auto">||</button><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">paused</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
+			this.root.innerHTML = `<div data-hud style="font-size:22px;white-space:pre-line"></div><button data-action="pause" type="button" aria-label="Pause" title="Pause" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:48px;height:48px;padding:0;border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:26px;line-height:1;pointer-events:auto">||</button><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">paused</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>`;
 			this.hud = this.root.querySelector('[data-hud]');
 			this.flash = this.root.querySelector('[data-flash]');
 			this.pauseMessage = this.root.querySelector('[data-pause]');
@@ -74,10 +73,6 @@ export class GameUI {
 		}
 		this.setRunStats(depth, stairs);
 		this.pauseMessage.style.display = paused ? 'grid' : 'none';
-	}
-
-	dismissControlHint() {
-		this.root.querySelector('[data-hint]')?.remove();
 	}
 
 	showRestartConfirmation(onResume, onRestart) {

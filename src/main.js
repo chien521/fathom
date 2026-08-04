@@ -63,14 +63,13 @@ function boot() {
 	let runId = 0;
 	let resultKey = '';
 	let submissionMessage = '';
-	const controlHintKey = 'fathom-control-hint-seen';
-	let showControlHint = localStorage.getItem(controlHintKey) !== 'true';
 	// SPEC-GAP: The personal-best localStorage key name is not specified.
 	let best = Number(localStorage.getItem('fathom-personal-best') || 0);
 	let bestExplorerScore = Number(localStorage.getItem('fathom-personal-best-explorer-score') || 0);
 	let lastTime = performance.now();
-	const input = new Input(pixelRenderer.renderer.domElement, togglePause, dismissControlHint);
+	const input = new Input(pixelRenderer.renderer.domElement, togglePause, () => {});
 	const isTouchDevice = navigator.maxTouchPoints > 0;
+	const controlHint = isTouchDevice ? 'keep swiping left / right • up to jump' : 'arrows / a / d to steer • up to jump';
 	window.addEventListener('keydown', (event) => {
 		const isSpace = event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar';
 		if (!isSpace) return;
@@ -84,15 +83,8 @@ function boot() {
 		startRun();
 	});
 
-	function dismissControlHint() {
-		if (!showControlHint) return;
-		showControlHint = false;
-		localStorage.setItem(controlHintKey, 'true');
-		ui.dismissControlHint();
-	}
-
 	function showTitle() {
-		ui.showTitle(startRun, () => viverse.connect(), () => showRecords('title'), viverse.state);
+		ui.showTitle(startRun, () => viverse.connect(), () => showRecords('title'), viverse.state, controlHint);
 	}
 
 	viverse.subscribe(() => {
@@ -114,8 +106,7 @@ function boot() {
 		player.reset();
 		platforms.reset();
 		particles.reset();
-		const hint = isTouchDevice ? 'keep swiping left / right • up to jump' : 'arrows / a / d to steer • up to jump';
-		ui.showRun(depth, stairs, false, showControlHint ? hint : '', togglePause, startRun);
+		ui.showRun(depth, stairs, false, togglePause, startRun);
 	}
 
 	function endRun() {
@@ -164,7 +155,7 @@ function boot() {
 		if (state === 'run') state = 'paused';
 		else if (state === 'paused') state = 'run';
 		else return;
-		ui.showRun(Math.floor(depth), stairs, state === 'paused', '', togglePause, startRun);
+		ui.showRun(Math.floor(depth), stairs, state === 'paused', togglePause, startRun);
 	}
 
 	function resize() {
