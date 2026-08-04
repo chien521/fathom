@@ -199,7 +199,6 @@ function boot() {
 			input.getDirection(),
 			0,
 			input.consumeJumpPress(),
-			input.isFastFalling(),
 			input.consumeFastFallPresses(),
 			platforms.platforms,
 		);

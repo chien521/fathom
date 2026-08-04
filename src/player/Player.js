@@ -23,7 +23,7 @@ export class Player {
 		this.syncMesh();
 	}
 
-	update(deltaSeconds, direction, mobileStep, jumpPressed, fastFalling, fastFallPresses, platforms) {
+	update(deltaSeconds, direction, mobileStep, jumpPressed, fastFallPresses, platforms) {
 		const wasGrounded = this.wasGrounded && (!this.groundPlatform || this.groundPlatform.isLandable());
 		const slideVelocity = wasGrounded && this.groundPlatform ? this.groundPlatform.getSlideVelocity() : 0;
 		const platformMotion = wasGrounded && this.groundPlatform ? this.groundPlatform.getMotionDeltaX() : 0;
@@ -36,7 +36,6 @@ export class Player {
 		if (wasGrounded && jumpPressed) this.velocityY = TUNING.jumpVelocity;
 		else this.velocityY -= TUNING.gravity * deltaSeconds;
 		if (!wasGrounded && this.velocityY < 0) {
-			if (fastFalling) this.velocityY -= TUNING.fastFallAcceleration * deltaSeconds;
 			if (fastFallPresses > 0) this.velocityY -= TUNING.fastFallPressImpulse * fastFallPresses;
 		}
 		this.velocityY = Math.max(this.velocityY, -TUNING.maxFallVelocity);

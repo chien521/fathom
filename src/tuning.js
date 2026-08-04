@@ -10,7 +10,6 @@ export const TUNING = Object.freeze({
 	gravity: 17,
 	steerSpeed: 7,
 	jumpVelocity: 8.5,
-	fastFallAcceleration: 28,
 	fastFallPressImpulse: 2.5,
 	mobileStepDistance: 0.65,
 	mobileSwipeMotionTimeout: 120,

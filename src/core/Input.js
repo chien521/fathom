@@ -107,10 +107,6 @@ export class Input {
 		return this.direction || this.touchDirection;
 	}
 
-	isFastFalling() {
-		return this.keys.has('ArrowDown');
-	}
-
 	consumeJumpPress() {
 		const wasPressed = this.jumpPressed;
 		this.jumpPressed = false;
