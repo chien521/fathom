@@ -140,7 +140,12 @@ function boot() {
 
 	async function showRecords(returnState) {
 		state = 'records';
-		ui.showRecords({ leaderboards: [], message: 'Loading records...' }, () => returnFromRecords(returnState));
+		ui.showRecords({
+			leaderboards: [
+				{ label: 'depth score', unit: 'm', entries: [], message: 'Loading records...' },
+				{ label: 'explorer score', unit: '', entries: [], message: 'Loading records...' },
+			],
+		}, () => returnFromRecords(returnState));
 		const result = await viverse.getLeaderboards();
 		if (state === 'records') ui.showRecords(result, () => returnFromRecords(returnState));
 	}
