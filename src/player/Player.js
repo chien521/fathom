@@ -23,11 +23,11 @@ export class Player {
 		this.syncMesh();
 	}
 
-	update(deltaSeconds, direction, jumpPressed, fastFalling, fastFallPressed, platforms) {
+	update(deltaSeconds, direction, mobileStep, jumpPressed, fastFalling, fastFallPresses, platforms) {
 		const wasGrounded = this.wasGrounded && (!this.groundPlatform || this.groundPlatform.isLandable());
 		const slideVelocity = wasGrounded && this.groundPlatform ? this.groundPlatform.getSlideVelocity() : 0;
 		const platformMotion = wasGrounded && this.groundPlatform ? this.groundPlatform.getMotionDeltaX() : 0;
-		this.x += (direction * TUNING.steerSpeed + slideVelocity) * deltaSeconds + platformMotion;
+		this.x += (direction * TUNING.steerSpeed + slideVelocity) * deltaSeconds + platformMotion + mobileStep * TUNING.mobileStepDistance;
 		const shaftLimit = TUNING.shaftWidth / 2 - TUNING.playerWidth / 2;
 		this.x = Math.max(-shaftLimit, Math.min(shaftLimit, this.x));
 		if (wasGrounded && this.groundPlatform) this.y = this.groundPlatform.getTopYAt(this.x) + TUNING.playerHeight / 2;
@@ -37,7 +37,7 @@ export class Player {
 		else this.velocityY -= TUNING.gravity * deltaSeconds;
 		if (!wasGrounded && this.velocityY < 0) {
 			if (fastFalling) this.velocityY -= TUNING.fastFallAcceleration * deltaSeconds;
-			if (fastFallPressed) this.velocityY -= TUNING.fastFallPressImpulse;
+			if (fastFallPresses > 0) this.velocityY -= TUNING.fastFallPressImpulse * fastFallPresses;
 		}
 		this.velocityY = Math.max(this.velocityY, -TUNING.maxFallVelocity);
 		this.y += this.velocityY * deltaSeconds;

@@ -16,7 +16,8 @@ Built with Three.js and Vite for desktop and mobile browsers.
 | Desktop | Up arrow to jump from a platform |
 | Desktop | Down arrow to fast-fall while airborne |
 | Desktop | Escape to pause |
-| Mobile | Touch and hold the left or right half of the screen to steer |
+| Mobile | Tap `<` or `>` to step; hold either button to walk |
+| Mobile | Tap `^` to jump; tap `v` for a double fast-fall impulse |
 
 ## Local Development
 

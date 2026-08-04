@@ -12,6 +12,9 @@ export const TUNING = Object.freeze({
 	jumpVelocity: 8.5,
 	fastFallAcceleration: 28,
 	fastFallPressImpulse: 2.5,
+	mobileStepDistance: 0.65,
+	mobileHoldDelay: 180,
+	mobileFastFallPressCount: 2,
 	maxFallVelocity: 18,
 	scrollSpeedCurve: [
 		{ depth: 0, speed: 1.35 },

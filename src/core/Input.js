@@ -1,21 +1,20 @@
+import { TUNING } from '../tuning.js';
+
 export class Input {
-	constructor(element, onPause, onControlInput) {
+	constructor(onPause, onControlInput) {
 		this.direction = 0;
 		this.keys = new Set();
 		this.touchDirection = 0;
+		this.mobileStepDirection = 0;
+		this.mobileHoldDirection = 0;
+		this.mobileHoldTimer = 0;
 		this.jumpPressed = false;
-		this.fastFallPressed = false;
-		this.element = element;
+		this.fastFallPresses = 0;
 		this.onPause = onPause;
 		this.onControlInput = onControlInput;
 
 		window.addEventListener('keydown', (event) => this.onKeyDown(event));
 		window.addEventListener('keyup', (event) => this.onKeyUp(event));
-		element.addEventListener('pointerdown', (event) => this.onPointerDown(event));
-		element.addEventListener('pointermove', (event) => this.onPointerMove(event));
-		element.addEventListener('pointerup', (event) => this.onPointerEnd(event));
-		element.addEventListener('pointercancel', (event) => this.onPointerEnd(event));
-		element.addEventListener('lostpointercapture', () => { this.touchDirection = 0; });
 	}
 
 	onKeyDown(event) {
@@ -29,7 +28,7 @@ export class Input {
 			this.keys.add(event.code);
 			this.onControlInput();
 			if (event.code === 'ArrowUp' && !event.repeat) this.jumpPressed = true;
-			if (event.code === 'ArrowDown' && !event.repeat) this.fastFallPressed = true;
+			if (event.code === 'ArrowDown' && !event.repeat) this.fastFallPresses += 1;
 			this.updateKeyboardDirection();
 		}
 	}
@@ -37,29 +36,6 @@ export class Input {
 	onKeyUp(event) {
 		this.keys.delete(event.code);
 		this.updateKeyboardDirection();
-	}
-
-	onPointerDown(event) {
-		if (event.pointerType === 'mouse') return;
-		event.preventDefault();
-		this.element.setPointerCapture(event.pointerId);
-		this.onControlInput();
-		this.updateTouchDirection(event);
-	}
-
-	onPointerMove(event) {
-		if (event.pointerType === 'mouse') return;
-		event.preventDefault();
-		this.updateTouchDirection(event);
-	}
-
-	onPointerEnd(event) {
-		if (event.pointerType !== 'mouse') event.preventDefault();
-		this.touchDirection = 0;
-	}
-
-	updateTouchDirection(event) {
-		this.touchDirection = event.clientX < this.element.clientWidth / 2 ? -1 : 1;
 	}
 
 	updateKeyboardDirection() {
@@ -72,6 +48,12 @@ export class Input {
 		return this.direction || this.touchDirection;
 	}
 
+	consumeMobileStep() {
+		const direction = this.mobileStepDirection;
+		this.mobileStepDirection = 0;
+		return direction;
+	}
+
 	isFastFalling() {
 		return this.keys.has('ArrowDown');
 	}
@@ -82,9 +64,46 @@ export class Input {
 		return wasPressed;
 	}
 
-	consumeFastFallPress() {
-		const wasPressed = this.fastFallPressed;
-		this.fastFallPressed = false;
-		return wasPressed;
+	consumeFastFallPresses() {
+		const presses = this.fastFallPresses;
+		this.fastFallPresses = 0;
+		return presses;
+	}
+
+	startMobileMove(direction) {
+		this.onControlInput();
+		this.mobileHoldDirection = direction;
+		clearTimeout(this.mobileHoldTimer);
+		this.mobileHoldTimer = window.setTimeout(() => {
+			if (this.mobileHoldDirection === direction) this.touchDirection = direction;
+		}, TUNING.mobileHoldDelay);
+	}
+
+	endMobileMove(direction) {
+		if (this.mobileHoldDirection !== direction) return;
+		const wasWalking = this.touchDirection === direction;
+		clearTimeout(this.mobileHoldTimer);
+		this.mobileHoldTimer = 0;
+		this.mobileHoldDirection = 0;
+		this.touchDirection = 0;
+		if (!wasWalking) this.mobileStepDirection = direction;
+	}
+
+	cancelMobileMove(direction) {
+		if (this.mobileHoldDirection !== direction) return;
+		clearTimeout(this.mobileHoldTimer);
+		this.mobileHoldTimer = 0;
+		this.mobileHoldDirection = 0;
+		this.touchDirection = 0;
+	}
+
+	tapMobileJump() {
+		this.onControlInput();
+		this.jumpPressed = true;
+	}
+
+	tapMobileFastFall() {
+		this.onControlInput();
+		this.fastFallPresses += TUNING.mobileFastFallPressCount;
 	}
 }

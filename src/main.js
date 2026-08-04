@@ -65,7 +65,14 @@ function boot() {
 	// SPEC-GAP: The personal-best localStorage key name is not specified.
 	let best = Number(localStorage.getItem('fathom-personal-best') || 0);
 	let lastTime = performance.now();
-	const input = new Input(pixelRenderer.renderer.domElement, togglePause, dismissControlHint);
+	const input = new Input(togglePause, dismissControlHint);
+	const mobileControls = navigator.maxTouchPoints > 0 ? {
+		startMove: (direction) => input.startMobileMove(direction),
+		endMove: (direction) => input.endMobileMove(direction),
+		cancelMove: (direction) => input.cancelMobileMove(direction),
+		jump: () => input.tapMobileJump(),
+		fastFall: () => input.tapMobileFastFall(),
+	} : null;
 	window.addEventListener('keydown', (event) => {
 		const isSpace = event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar';
 		if (!isSpace) return;
@@ -108,8 +115,8 @@ function boot() {
 		player.reset();
 		platforms.reset();
 		particles.reset();
-		const hint = navigator.maxTouchPoints > 0 ? 'HOLD LEFT OR RIGHT SIDE TO STEER' : 'ARROWS / A / D TO STEER • UP TO JUMP';
-		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun);
+		const hint = mobileControls ? 'TAP TO STEP • HOLD TO WALK' : 'ARROWS / A / D TO STEER • UP TO JUMP';
+		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun, mobileControls);
 	}
 
 	function endRun() {
@@ -154,7 +161,7 @@ function boot() {
 		if (state === 'run') state = 'paused';
 		else if (state === 'paused') state = 'run';
 		else return;
-		ui.showRun(Math.floor(depth), state === 'paused', '', togglePause, startRun);
+		ui.showRun(Math.floor(depth), state === 'paused', '', togglePause, startRun, mobileControls);
 	}
 
 	function resize() {
@@ -196,9 +203,10 @@ function boot() {
 		const landedPlatform = player.update(
 			deltaSeconds,
 			input.getDirection(),
+			input.consumeMobileStep(),
 			input.consumeJumpPress(),
 			input.isFastFalling(),
-			input.consumeFastFallPress(),
+			input.consumeFastFallPresses(),
 			platforms.platforms,
 		);
 		if (landedPlatform !== null) {
