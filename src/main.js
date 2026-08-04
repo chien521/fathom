@@ -67,6 +67,7 @@ function boot() {
 	let showControlHint = localStorage.getItem(controlHintKey) !== 'true';
 	// SPEC-GAP: The personal-best localStorage key name is not specified.
 	let best = Number(localStorage.getItem('fathom-personal-best') || 0);
+	let bestExplorerScore = Number(localStorage.getItem('fathom-personal-best-explorer-score') || 0);
 	let lastTime = performance.now();
 	const input = new Input(pixelRenderer.renderer.domElement, togglePause, dismissControlHint);
 	const isTouchDevice = navigator.maxTouchPoints > 0;
@@ -126,12 +127,14 @@ function boot() {
 		explorerScore = finalDepth + finalStairs * TUNING.explorerStairValue;
 		resultKey = `fathom-${runId}-${finalDepth}-${finalStairs}`;
 		best = Math.max(best, finalDepth);
+		bestExplorerScore = Math.max(bestExplorerScore, explorerScore);
 		localStorage.setItem('fathom-personal-best', String(best));
+		localStorage.setItem('fathom-personal-best-explorer-score', String(bestExplorerScore));
 		showGameOver();
 	}
 
 	function showGameOver() {
-		ui.showGameOver(finalDepth, best, finalStairs, explorerScore, startRun, () => viverse.connect(), () => showRecords('gameOver'), submitScore, viverse.state, submissionMessage);
+		ui.showGameOver(finalDepth, best, bestExplorerScore, finalStairs, explorerScore, startRun, () => viverse.connect(), () => showRecords('gameOver'), submitScore, viverse.state, submissionMessage);
 	}
 
 	async function submitScore() {
