@@ -57,6 +57,9 @@ function boot() {
 	let nextMilestone = TUNING.depthMilestone;
 	let shakeTime = 0;
 	let finalDepth = 0;
+	let stairs = 0;
+	let finalStairs = 0;
+	let explorerScore = 0;
 	let runId = 0;
 	let resultKey = '';
 	let submissionMessage = '';
@@ -104,13 +107,14 @@ function boot() {
 		submissionMessage = '';
 		cameraY = 0;
 		depth = 0;
+		stairs = 0;
 		nextMilestone = TUNING.depthMilestone;
 		shakeTime = 0;
 		player.reset();
 		platforms.reset();
 		particles.reset();
 		const hint = isTouchDevice ? 'KEEP SWIPING LEFT / RIGHT • UP TO JUMP' : 'ARROWS / A / D TO STEER • UP TO JUMP';
-		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun);
+		ui.showRun(depth, stairs, false, showControlHint ? hint : '', togglePause, startRun);
 	}
 
 	function endRun() {
@@ -118,20 +122,22 @@ function boot() {
 		shakeTime = TUNING.deathShakeDuration;
 		audio.death();
 		finalDepth = Math.floor(depth);
-		resultKey = `fathom-${runId}-${finalDepth}`;
+		finalStairs = stairs;
+		explorerScore = finalDepth + finalStairs * TUNING.explorerStairValue;
+		resultKey = `fathom-${runId}-${finalDepth}-${finalStairs}`;
 		best = Math.max(best, finalDepth);
 		localStorage.setItem('fathom-personal-best', String(best));
 		showGameOver();
 	}
 
 	function showGameOver() {
-		ui.showGameOver(finalDepth, best, startRun, () => viverse.connect(), () => showRecords('gameOver'), submitScore, viverse.state, submissionMessage);
+		ui.showGameOver(finalDepth, best, finalStairs, explorerScore, startRun, () => viverse.connect(), () => showRecords('gameOver'), submitScore, viverse.state, submissionMessage);
 	}
 
 	async function submitScore() {
 		submissionMessage = 'Submitting score...';
 		showGameOver();
-		const result = await viverse.submitScore(finalDepth, resultKey);
+		const result = await viverse.submitScore(finalDepth, explorerScore, resultKey);
 		if (state === 'gameOver') {
 			submissionMessage = result.message;
 			showGameOver();
@@ -140,8 +146,8 @@ function boot() {
 
 	async function showRecords(returnState) {
 		state = 'records';
-		ui.showRecords({ entries: [], message: 'Loading records...' }, () => returnFromRecords(returnState));
-		const result = await viverse.getLeaderboard();
+		ui.showRecords({ leaderboards: [], message: 'Loading records...' }, () => returnFromRecords(returnState));
+		const result = await viverse.getLeaderboards();
 		if (state === 'records') ui.showRecords(result, () => returnFromRecords(returnState));
 	}
 
@@ -155,7 +161,7 @@ function boot() {
 		if (state === 'run') state = 'paused';
 		else if (state === 'paused') state = 'run';
 		else return;
-		ui.showRun(Math.floor(depth), state === 'paused', '', togglePause, startRun);
+		ui.showRun(Math.floor(depth), stairs, state === 'paused', '', togglePause, startRun);
 	}
 
 	function resize() {
@@ -203,6 +209,7 @@ function boot() {
 			platforms.platforms,
 		);
 		if (landedPlatform !== null) {
+			stairs += 1;
 			player.squash();
 			audio.land();
 			const effect = platforms.onLand(landedPlatform);
@@ -213,7 +220,7 @@ function boot() {
 			}
 		}
 		depth = Math.max(depth, -cameraY * TUNING.metersPerWorldUnit);
-		ui.setDepth(Math.floor(depth));
+		ui.setRunStats(Math.floor(depth), stairs);
 		while (depth >= nextMilestone) {
 			ui.flashMilestone();
 			audio.milestone();

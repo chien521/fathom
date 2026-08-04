@@ -31,6 +31,7 @@ Create `.env` from `.env.example` and provide the VIVERSE values:
 ```text
 VITE_VIVERSE_CLIENT_ID=your-world-app-id
 VITE_VIVERSE_LEADERBOARD_NAME=depth
+VITE_VIVERSE_EXPLORER_LEADERBOARD_NAME=explorer
 ```
 
 Vite embeds `VITE_*` values at build time. Rebuild after changing either value.
@@ -49,9 +50,10 @@ npm run preview
 
 1. Open the VIVERSE World App that owns FATHOM and copy its App ID into `VITE_VIVERSE_CLIENT_ID`.
 2. Register the hosted world's required authentication origin and redirect URL in Studio.
-3. Create a leaderboard under that same App ID with API name `depth` exactly, including its lowercase spelling.
-4. Configure it as `Numerical` and `Descending`. Use the Studio update rule for a player's best result so the leaderboard represents each player's deepest dive rather than cumulative depth.
-5. Save and publish the Studio configuration, then rebuild the game.
+3. Create Numerical/Descending leaderboards under that App ID: `depth` for deepest depth and `explorer` for Explorer Score.
+4. Use the Studio update rule for each player's best result so records represent their strongest run rather than cumulative totals.
+5. Explorer Score is $D + 12S$, where $D$ is depth in meters and $S$ is distinct platform landings.
+6. Save and publish the Studio configuration, then rebuild the game.
 
 The App ID and leaderboard name are compiled into the Vite bundle from `.env`; they are not configured on the VIVERSE side at upload time. Keep the same App ID in `.env` as the World App being updated.
 

@@ -15,6 +15,7 @@ export class ViverseSession {
 		this.client = null;
 		this.appId = '';
 		this.leaderboardName = import.meta.env.VITE_VIVERSE_LEADERBOARD_NAME || '';
+		this.explorerLeaderboardName = import.meta.env.VITE_VIVERSE_EXPLORER_LEADERBOARD_NAME || '';
 		this.gameDashboardClient = null;
 		this.dashboardToken = '';
 		this.submittedResultKeys = new Set();
@@ -141,7 +142,7 @@ export class ViverseSession {
 		return this.state;
 	}
 
-	async submitScore(score, resultKey) {
+	async submitScore(score, explorerScore, resultKey) {
 		await this.initialize();
 		const value = Math.floor(Number(score));
 		if (!Number.isFinite(value) || value <= 0) return { status: 'invalid', message: 'A depth above 0m is required.' };
@@ -153,11 +154,12 @@ export class ViverseSession {
 		try {
 			const dashboard = await this.getDashboardClient();
 			if (!dashboard) return { status: 'error', message: 'Score submission is unavailable right now.' };
-			await dashboard.uploadLeaderboardScore(this.appId, [
-				{ name: this.leaderboardName, value },
-			]);
+			const scores = [{ name: this.leaderboardName, value }];
+			const explorerValue = Math.floor(Number(explorerScore));
+			if (this.explorerLeaderboardName && Number.isFinite(explorerValue) && explorerValue > 0) scores.push({ name: this.explorerLeaderboardName, value: explorerValue });
+			await dashboard.uploadLeaderboardScore(this.appId, scores);
 			this.submittedResultKeys.add(resultKey);
-			return { status: 'submitted', message: 'Score submitted.' };
+			return { status: 'submitted', message: this.explorerLeaderboardName ? 'Depth and Explorer scores submitted.' : 'Depth score submitted.' };
 		} catch (error) {
 			console.warn('[VIVERSE] Leaderboard submission failed.', error);
 			return { status: 'error', message: 'Score submission failed. Please try again.' };
@@ -200,18 +202,18 @@ export class ViverseSession {
 		}));
 	}
 
-	async getLeaderboard() {
+	async getLeaderboard(leaderboardName = this.leaderboardName) {
 		await this.initialize();
 		if (this.state.status === 'unavailable') return { status: 'unavailable', entries: [], message: 'Records are available on VIVERSE.' };
 		if (this.state.status !== 'logged_in') return { status: this.state.status, entries: [], message: 'Sign in to view records.' };
-		if (!this.leaderboardName) return { status: 'unavailable', entries: [], message: 'Records need VIVERSE leaderboard setup.' };
+		if (!leaderboardName) return { status: 'unavailable', entries: [], message: 'Records need VIVERSE leaderboard setup.' };
 		try {
 			const dashboard = await this.getDashboardClient();
 			if (!dashboard) return { status: 'error', entries: [], message: 'Records are unavailable right now.' };
 			const configs = [
-				{ name: this.leaderboardName, range_start: 0, range_end: 9, region: 'global', time_range: 'alltime', around_user: false },
-				{ name: this.leaderboardName, range_start: 0, range_end: 9, region: 'global', time_range: 'alltime', around_user: true },
-				{ name: this.leaderboardName, range_start: 0, range_end: 9, region: 'local', time_range: 'alltime', around_user: false },
+				{ name: leaderboardName, range_start: 0, range_end: 9, region: 'global', time_range: 'alltime', around_user: false },
+				{ name: leaderboardName, range_start: 0, range_end: 9, region: 'global', time_range: 'alltime', around_user: true },
+				{ name: leaderboardName, range_start: 0, range_end: 9, region: 'local', time_range: 'alltime', around_user: false },
 			];
 			let rankings = [];
 			for (const config of configs) {
@@ -229,5 +231,19 @@ export class ViverseSession {
 			console.warn('[VIVERSE] Leaderboard read failed.', error);
 			return { status: 'error', entries: [], message: 'Records are unavailable right now.' };
 		}
+	}
+
+	async getLeaderboards() {
+		const configurations = [
+			{ label: 'DEEPEST DEPTH', name: this.leaderboardName, unit: 'm' },
+			{ label: 'EXPLORER SCORE', name: this.explorerLeaderboardName, unit: '' },
+		].filter((configuration) => configuration.name);
+		if (configurations.length === 0) return { leaderboards: [], message: 'Records need VIVERSE leaderboard setup.' };
+		const leaderboards = await Promise.all(configurations.map(async (configuration) => ({
+			label: configuration.label,
+			unit: configuration.unit,
+			...(await this.getLeaderboard(configuration.name)),
+		})));
+		return { leaderboards, message: '' };
 	}
 }

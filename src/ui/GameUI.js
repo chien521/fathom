@@ -60,7 +60,7 @@ export class GameUI {
 		}, { once: true });
 	}
 
-	showRun(depth, paused, controlHint, onResume, onRestart) {
+	showRun(depth, stairs, paused, controlHint, onResume, onRestart) {
 		if (!this.hud) {
 			const hint = controlHint ? `<div data-hint style="position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:14px;text-align:center;white-space:nowrap;text-shadow:2px 2px ${PALETTE.uiPanel}">${escapeHtml(controlHint)}</div>` : '';
 			this.root.innerHTML = `<div data-hud style="font-size:22px"></div><button data-action="pause" type="button" aria-label="Pause" title="Pause" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:48px;height:48px;padding:0;border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:26px;line-height:1;pointer-events:auto">||</button><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">PAUSED</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
@@ -72,7 +72,7 @@ export class GameUI {
 			this.pauseMessage.querySelector('[data-action="restart"]').addEventListener('click', () => this.showRestartConfirmation(onResume, onRestart));
 			this.depth = null;
 		}
-		this.setDepth(depth);
+		this.setRunStats(depth, stairs);
 		this.pauseMessage.style.display = paused ? 'grid' : 'none';
 	}
 
@@ -92,10 +92,11 @@ export class GameUI {
 		this.pauseMessage.querySelector('[data-action="restart"]').addEventListener('click', () => this.showRestartConfirmation(onResume, onRestart));
 	}
 
-	setDepth(depth) {
-		if (this.depth === depth || !this.hud) return;
+	setRunStats(depth, stairs) {
+		if ((this.depth === depth && this.stairs === stairs) || !this.hud) return;
 		this.depth = depth;
-		this.hud.textContent = `DEPTH ${depth}m`;
+		this.stairs = stairs;
+		this.hud.textContent = `DEPTH ${depth}m  STAIRS ${stairs}`;
 	}
 
 	flashMilestone() {
@@ -108,14 +109,14 @@ export class GameUI {
 		this.flash.style.opacity = String(this.flashTime / TUNING.milestoneFlashDuration);
 	}
 
-	showGameOver(depth, best, onDive, onConnect, onRecords, onSubmit, viverseState, submissionMessage) {
+	showGameOver(depth, best, stairs, explorerScore, onDive, onConnect, onRecords, onSubmit, viverseState, submissionMessage) {
 		this.hud = null;
 		this.pauseMessage = null;
 		this.flash = null;
 		const connectLabel = viverseState?.status === 'logged_in' ? 'viverse connected' : 'connect viverse';
 		const submit = viverseState?.status === 'logged_in' ? `<button data-action="submit" style="${secondaryButtonStyle}">submit score</button>` : '';
 		const message = submissionMessage ? `<p style="color:${PALETTE.uiMuted}">${escapeHtml(submissionMessage)}</p>` : '';
-		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section data-game-over-panel style="box-sizing:border-box;min-width:280px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center;opacity:0;transition:opacity 220ms ease-out"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">DIVE OVER</h2><p>DEPTH ${depth}m</p><p>PERSONAL BEST ${best}m</p><p style="margin:12px 0 20px">tap / press space to dive again</p><button data-action="dive" style="${primaryButtonStyle}">dive again</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button>${submit}<button data-action="records" style="${secondaryButtonStyle}">records</button></p>${message}</section></div>`;
+		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section data-game-over-panel style="box-sizing:border-box;min-width:280px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center;opacity:0;transition:opacity 220ms ease-out"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">DIVE OVER</h2><p>DEPTH ${depth}m</p><p>STAIRS ${stairs}</p><p>EXPLORER SCORE ${explorerScore}</p><p>PERSONAL BEST ${best}m</p><p style="margin:12px 0 20px">tap / press space to dive again</p><button data-action="dive" style="${primaryButtonStyle}">dive again</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button>${submit}<button data-action="records" style="${secondaryButtonStyle}">records</button></p>${message}</section></div>`;
 		this.root.querySelector('[data-action="dive"]').addEventListener('click', onDive);
 		this.root.querySelector('[data-action="viverse"]').addEventListener('click', onConnect);
 		this.root.querySelector('[data-action="records"]').addEventListener('click', onRecords);
@@ -126,8 +127,11 @@ export class GameUI {
 	}
 
 	showRecords(result, onBack) {
-		const rows = result.entries.map((entry) => `<li>#${entry.rank} ${escapeHtml(entry.name)} ${entry.score}m</li>`).join('');
-		const content = rows ? `<ol style="padding-left:24px;text-align:left;max-height:220px;overflow-y:auto">${rows}</ol>` : `<p>${escapeHtml(result.message || 'Loading records...')}</p>`;
+		const leaderboards = result.leaderboards || [];
+		const content = leaderboards.length ? leaderboards.map((leaderboard) => {
+			const rows = leaderboard.entries.map((entry) => `<li>#${entry.rank} ${escapeHtml(entry.name)} ${entry.score}${leaderboard.unit}</li>`).join('');
+			return `<section style="margin:18px 0;text-align:left"><h3 style="margin:0 0 8px;color:${PALETTE.uiText};font-size:18px;text-align:center">${escapeHtml(leaderboard.label)}</h3>${rows ? `<ol style="margin:0;padding-left:24px;max-height:160px;overflow-y:auto">${rows}</ol>` : `<p style="text-align:center">${escapeHtml(leaderboard.message || 'No dives recorded yet.')}</p>`}</section>`;
+		}).join('') : `<p>${escapeHtml(result.message || 'Loading records...')}</p>`;
 		this.hud = null;
 		this.pauseMessage = null;
 		this.flash = null;
