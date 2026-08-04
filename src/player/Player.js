@@ -24,7 +24,7 @@ export class Player {
 	}
 
 	update(deltaSeconds, direction, jumpPressed, fastFalling, fastFallPressed, platforms) {
-		const wasGrounded = this.wasGrounded;
+		const wasGrounded = this.wasGrounded && (!this.groundPlatform || this.groundPlatform.isLandable());
 		const slideVelocity = wasGrounded && this.groundPlatform ? this.groundPlatform.getSlideVelocity() : 0;
 		const platformMotion = wasGrounded && this.groundPlatform ? this.groundPlatform.getMotionDeltaX() : 0;
 		this.x += (direction * TUNING.steerSpeed + slideVelocity) * deltaSeconds + platformMotion;
@@ -78,11 +78,6 @@ export class Player {
 	launch(velocityY) {
 		this.velocityY = velocityY;
 		this.wasGrounded = false;
-	}
-
-	drop() {
-		this.wasGrounded = false;
-		this.groundPlatform = null;
 	}
 
 	squash() {

@@ -130,7 +130,7 @@ class Platform {
 	}
 
 	isLandable() {
-		return this.type !== 'ice' || this.crumbleTime === 0;
+		return this.type !== 'ice' || this.crumbleTime <= TUNING.iceCrumbleDelay;
 	}
 
 	isUnder(playerX, playerWidth) {

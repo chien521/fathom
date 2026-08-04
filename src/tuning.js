@@ -53,7 +53,7 @@ export const TUNING = Object.freeze({
 	platformDepth: 0.7,
 	platformMinWidth: 2.4,
 	platformMaxWidth: 4.4,
-	iceCrumbleDelay: 0.5,
+	iceCrumbleDelay: 1,
 	iceFallSpeed: 8,
 	iceFallDistance: 4,
 	slideTiltAngle: 0.3,
