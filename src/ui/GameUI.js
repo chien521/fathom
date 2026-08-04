@@ -9,7 +9,6 @@ const buttonSizeStyle = `box-sizing:border-box;width:168px;height:48px;font-fami
 const primaryButtonStyle = `${buttonSizeStyle}--button-fill:${PALETTE.uiAccent};--button-hover-text:#000000;--button-text:${PALETTE.uiAccent};border:2px solid ${PALETTE.uiAccent};background:transparent;color:${PALETTE.uiAccent};`;
 const secondaryButtonStyle = `${buttonSizeStyle}--button-fill:${PALETTE.uiText};--button-hover-text:#ffffff;--button-text:${PALETTE.uiText};border:1px solid ${PALETTE.uiText};background:transparent;color:${PALETTE.uiText};`;
 const pausePanelStyle = `box-sizing:border-box;min-width:280px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center;`;
-const mobileControlStyle = `box-sizing:border-box;width:56px;height:56px;--button-fill:${PALETTE.uiText};--button-hover-text:#ffffff;--button-text:${PALETTE.uiText};border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:28px;line-height:1;`;
 
 function escapeHtml(value) {
 	return String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
@@ -59,17 +58,15 @@ export class GameUI {
 		}, { once: true });
 	}
 
-	showRun(depth, paused, controlHint, onResume, onRestart, mobileControls) {
+	showRun(depth, paused, controlHint, onResume, onRestart) {
 		if (!this.hud) {
 			const hint = controlHint ? `<div data-hint style="position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:14px;text-align:center;white-space:nowrap;text-shadow:2px 2px ${PALETTE.uiPanel}">${escapeHtml(controlHint)}</div>` : '';
-			const controls = mobileControls ? `<div data-mobile-controls style="position:absolute;left:calc(16px + env(safe-area-inset-left));right:calc(16px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;pointer-events:auto"><div style="display:flex;gap:10px"><button data-move="-1" aria-label="move left" style="${mobileControlStyle}">&lt;</button><button data-move="1" aria-label="move right" style="${mobileControlStyle}">&gt;</button></div><div style="display:flex;gap:10px"><button data-action="mobile-jump" aria-label="jump" style="${mobileControlStyle}">^</button><button data-action="mobile-fall" aria-label="fast fall" style="${mobileControlStyle}">v</button></div></div>` : '';
-			this.root.innerHTML = `<div data-hud style="font-size:22px"></div><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div>${controls}<div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">PAUSED</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
+			this.root.innerHTML = `<div data-hud style="font-size:22px"></div><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">PAUSED</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
 			this.hud = this.root.querySelector('[data-hud]');
 			this.flash = this.root.querySelector('[data-flash]');
 			this.pauseMessage = this.root.querySelector('[data-pause]');
 			this.pauseMessage.querySelector('[data-action="resume"]').addEventListener('click', onResume);
 			this.pauseMessage.querySelector('[data-action="restart"]').addEventListener('click', () => this.showRestartConfirmation(onResume, onRestart));
-			if (mobileControls) this.bindMobileControls(mobileControls);
 			this.depth = null;
 		}
 		this.setDepth(depth);
@@ -78,31 +75,6 @@ export class GameUI {
 
 	dismissControlHint() {
 		this.root.querySelector('[data-hint]')?.remove();
-	}
-
-	bindMobileControls(controls) {
-		for (const button of this.root.querySelectorAll('[data-move]')) {
-			const direction = Number(button.dataset.move);
-			button.addEventListener('pointerdown', (event) => {
-				event.preventDefault();
-				button.setPointerCapture(event.pointerId);
-				controls.startMove(direction);
-			});
-			button.addEventListener('pointerup', (event) => {
-				event.preventDefault();
-				controls.endMove(direction);
-			});
-			button.addEventListener('pointercancel', () => controls.cancelMove(direction));
-			button.addEventListener('lostpointercapture', () => controls.cancelMove(direction));
-		}
-		this.root.querySelector('[data-action="mobile-jump"]').addEventListener('pointerdown', (event) => {
-			event.preventDefault();
-			controls.jump();
-		});
-		this.root.querySelector('[data-action="mobile-fall"]').addEventListener('pointerdown', (event) => {
-			event.preventDefault();
-			controls.fastFall();
-		});
 	}
 
 	showRestartConfirmation(onResume, onRestart) {

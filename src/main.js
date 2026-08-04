@@ -65,14 +65,8 @@ function boot() {
 	// SPEC-GAP: The personal-best localStorage key name is not specified.
 	let best = Number(localStorage.getItem('fathom-personal-best') || 0);
 	let lastTime = performance.now();
-	const input = new Input(togglePause, dismissControlHint);
-	const mobileControls = navigator.maxTouchPoints > 0 ? {
-		startMove: (direction) => input.startMobileMove(direction),
-		endMove: (direction) => input.endMobileMove(direction),
-		cancelMove: (direction) => input.cancelMobileMove(direction),
-		jump: () => input.tapMobileJump(),
-		fastFall: () => input.tapMobileFastFall(),
-	} : null;
+	const input = new Input(pixelRenderer.renderer.domElement, togglePause, dismissControlHint);
+	const isTouchDevice = navigator.maxTouchPoints > 0;
 	window.addEventListener('keydown', (event) => {
 		const isSpace = event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar';
 		if (!isSpace) return;
@@ -115,8 +109,8 @@ function boot() {
 		player.reset();
 		platforms.reset();
 		particles.reset();
-		const hint = mobileControls ? 'TAP TO STEP • HOLD TO WALK' : 'ARROWS / A / D TO STEER • UP TO JUMP';
-		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun, mobileControls);
+		const hint = isTouchDevice ? 'SWIPE LEFT / RIGHT • UP TO JUMP' : 'ARROWS / A / D TO STEER • UP TO JUMP';
+		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun);
 	}
 
 	function endRun() {
@@ -161,7 +155,7 @@ function boot() {
 		if (state === 'run') state = 'paused';
 		else if (state === 'paused') state = 'run';
 		else return;
-		ui.showRun(Math.floor(depth), state === 'paused', '', togglePause, startRun, mobileControls);
+		ui.showRun(Math.floor(depth), state === 'paused', '', togglePause, startRun);
 	}
 
 	function resize() {

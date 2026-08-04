@@ -1,13 +1,17 @@
 import { TUNING } from '../tuning.js';
 
 export class Input {
-	constructor(onPause, onControlInput) {
+	constructor(element, onPause, onControlInput) {
 		this.direction = 0;
 		this.keys = new Set();
 		this.touchDirection = 0;
 		this.mobileStepDirection = 0;
 		this.mobileHoldDirection = 0;
 		this.mobileHoldTimer = 0;
+		this.gesturePointerId = null;
+		this.gestureStartX = 0;
+		this.gestureStartY = 0;
+		this.gestureType = '';
 		this.jumpPressed = false;
 		this.fastFallPresses = 0;
 		this.onPause = onPause;
@@ -15,6 +19,11 @@ export class Input {
 
 		window.addEventListener('keydown', (event) => this.onKeyDown(event));
 		window.addEventListener('keyup', (event) => this.onKeyUp(event));
+		element.addEventListener('pointerdown', (event) => this.onPointerDown(event));
+		element.addEventListener('pointermove', (event) => this.onPointerMove(event));
+		element.addEventListener('pointerup', (event) => this.onPointerEnd(event));
+		element.addEventListener('pointercancel', (event) => this.onPointerCancel(event));
+		element.addEventListener('lostpointercapture', () => this.cancelMobileMove(this.mobileHoldDirection));
 	}
 
 	onKeyDown(event) {
@@ -36,6 +45,48 @@ export class Input {
 	onKeyUp(event) {
 		this.keys.delete(event.code);
 		this.updateKeyboardDirection();
+	}
+
+	onPointerDown(event) {
+		if (event.pointerType === 'mouse') return;
+		event.preventDefault();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		this.onControlInput();
+		this.gesturePointerId = event.pointerId;
+		this.gestureStartX = event.clientX;
+		this.gestureStartY = event.clientY;
+		this.gestureType = 'pending';
+	}
+
+	onPointerMove(event) {
+		if (event.pointerId !== this.gesturePointerId || this.gestureType !== 'pending') return;
+		event.preventDefault();
+		const horizontalDistance = event.clientX - this.gestureStartX;
+		const verticalDistance = event.clientY - this.gestureStartY;
+		if (Math.max(Math.abs(horizontalDistance), Math.abs(verticalDistance)) < TUNING.mobileSwipeThreshold) return;
+		if (Math.abs(horizontalDistance) > Math.abs(verticalDistance)) {
+			this.gestureType = 'horizontal';
+			this.startMobileMove(Math.sign(horizontalDistance));
+			return;
+		}
+		this.gestureType = 'vertical';
+		if (verticalDistance < 0) this.tapMobileJump();
+		else this.tapMobileFastFall();
+	}
+
+	onPointerEnd(event) {
+		if (event.pointerId !== this.gesturePointerId) return;
+		event.preventDefault();
+		if (this.gestureType === 'horizontal') this.endMobileMove(this.mobileHoldDirection);
+		this.gesturePointerId = null;
+		this.gestureType = '';
+	}
+
+	onPointerCancel(event) {
+		if (event.pointerId !== this.gesturePointerId) return;
+		this.cancelMobileMove(this.mobileHoldDirection);
+		this.gesturePointerId = null;
+		this.gestureType = '';
 	}
 
 	updateKeyboardDirection() {
