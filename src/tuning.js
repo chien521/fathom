@@ -61,7 +61,7 @@ export const TUNING = Object.freeze({
 	slideSpeed: 4,
 	movingPlatformAmplitude: 1.1,
 	movingPlatformAngularSpeed: 2,
-	geyserLaunchVelocity: 12,
+	geyserLaunchVelocity: 9.5,
 	particlePoolSize: 96,
 	particleSize: 0.16,
 	particleLifetime: 0.45,
