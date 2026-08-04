@@ -152,7 +152,8 @@ export class PlatformPool {
 		this.lastSpawnType = null;
 		this.consecutiveSpawnCount = 0;
 		this.difficulty = getDifficulty(0);
-		const initialX = this.randomRange(-TUNING.initialPlatformWidth / 2, TUNING.initialPlatformWidth / 2);
+		const initialOffset = (TUNING.initialPlatformWidth - TUNING.playerWidth) / 2;
+		const initialX = this.randomRange(-initialOffset, initialOffset);
 		this.spawn(this.platforms[0], initialX, this.nextSpawnY, TUNING.initialPlatformWidth, 'stone');
 		this.nextSpawnY -= this.difficulty.minGap;
 		for (let index = 1; index < this.platforms.length; index += 1) this.spawnNext(this.platforms[index]);
