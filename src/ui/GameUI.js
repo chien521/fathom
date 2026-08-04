@@ -49,7 +49,7 @@ export class GameUI {
 	showTitle(onDive, onConnect, onRecords, viverseState) {
 		const connectLabel = viverseState?.status === 'logged_in' ? 'viverse connected' : 'connect viverse';
 		const isMobileLayout = window.matchMedia('(max-width: 767px)').matches;
-		const titleOffset = isMobileLayout ? '-18vh' : '-30vh';
+		const titleOffset = isMobileLayout ? '-20vh' : '-30vh';
 		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="text-align:center;transform:translateY(${titleOffset})"><h1 style="margin:0;color:${PALETTE.uiAccent};font-family:Georgia, 'Times New Roman', serif;font-size:56px;font-weight:normal">fathom</h1><p style="margin:12px 0 20px">tap / press space to dive</p><button data-action="dive" style="${primaryButtonStyle}">dive</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button><button data-action="records" style="${secondaryButtonStyle}">records</button></p></section></div>`;
 		this.root.querySelector('[data-action="dive"]').addEventListener('click', onDive);
 		this.root.querySelector('[data-action="viverse"]').addEventListener('click', onConnect);
