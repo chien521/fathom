@@ -235,7 +235,7 @@ export class ViverseSession {
 
 	async getLeaderboards() {
 		const configurations = [
-			{ label: 'deepest depth', name: this.leaderboardName, unit: 'm' },
+			{ label: 'depth score', name: this.leaderboardName, unit: 'm' },
 			{ label: 'explorer score', name: this.explorerLeaderboardName, unit: '' },
 		].filter((configuration) => configuration.name);
 		if (configurations.length === 0) return { leaderboards: [], message: 'Records need VIVERSE leaderboard setup.' };
