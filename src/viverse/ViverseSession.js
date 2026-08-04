@@ -14,8 +14,8 @@ export class ViverseSession {
 		this.sdk = null;
 		this.client = null;
 		this.appId = '';
-		this.leaderboardName = import.meta.env.VITE_VIVERSE_LEADERBOARD_NAME || '';
-		this.explorerLeaderboardName = import.meta.env.VITE_VIVERSE_EXPLORER_LEADERBOARD_NAME || '';
+		this.leaderboardName = import.meta.env.VITE_VIVERSE_LEADERBOARD_NAME || 'depth';
+		this.explorerLeaderboardName = import.meta.env.VITE_VIVERSE_EXPLORER_LEADERBOARD_NAME || 'explorer';
 		this.gameDashboardClient = null;
 		this.dashboardToken = '';
 		this.submittedResultKeys = new Set();
