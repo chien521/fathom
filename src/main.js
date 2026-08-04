@@ -60,6 +60,7 @@ function boot() {
 	let stairs = 0;
 	let finalStairs = 0;
 	let explorerScore = 0;
+	const countedPlatformPlacements = new Set();
 	let runId = 0;
 	let resultKey = '';
 	let submissionMessage = '';
@@ -101,6 +102,7 @@ function boot() {
 		cameraY = 0;
 		depth = 0;
 		stairs = 0;
+		countedPlatformPlacements.clear();
 		nextMilestone = TUNING.depthMilestone;
 		shakeTime = 0;
 		player.reset();
@@ -208,7 +210,10 @@ function boot() {
 			platforms.platforms,
 		);
 		if (landedPlatform !== null) {
-			stairs += 1;
+			if (!countedPlatformPlacements.has(landedPlatform.placementId)) {
+				countedPlatformPlacements.add(landedPlatform.placementId);
+				stairs += 1;
+			}
 			player.squash();
 			audio.land();
 			const effect = platforms.onLand(landedPlatform);

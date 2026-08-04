@@ -147,6 +147,7 @@ export class PlatformPool {
 		this.consecutiveSpawnCount = 0;
 		this.difficulty = getDifficulty(0);
 		this.crumbledPlatform = null;
+		this.nextPlacementId = 0;
 	}
 
 	reset() {
@@ -200,6 +201,8 @@ export class PlatformPool {
 	}
 
 	spawn(platform, x, y, width, type) {
+		platform.placementId = this.nextPlacementId;
+		this.nextPlacementId += 1;
 		platform.place(x, y, width, type);
 		this.lastSpawnX = x;
 		this.consecutiveSpawnCount = type === this.lastSpawnType ? this.consecutiveSpawnCount + 1 : 1;
