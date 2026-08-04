@@ -47,7 +47,7 @@ export class Player {
 
 		if (this.velocityY <= 0) {
 			for (const platform of platforms) {
-				if (!platform.mesh.visible || !platform.isUnder(this.x, TUNING.playerWidth)) continue;
+				if (!platform.mesh.visible || !platform.isLandable() || !platform.isUnder(this.x, TUNING.playerWidth)) continue;
 				const platformTop = platform.getTopYAt(this.x);
 				const playerBottom = this.y - TUNING.playerHeight / 2;
 				if (previousBottom >= platformTop && playerBottom <= platformTop) {
@@ -78,6 +78,11 @@ export class Player {
 	launch(velocityY) {
 		this.velocityY = velocityY;
 		this.wasGrounded = false;
+	}
+
+	drop() {
+		this.wasGrounded = false;
+		this.groundPlatform = null;
 	}
 
 	squash() {

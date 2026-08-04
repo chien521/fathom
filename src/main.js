@@ -209,6 +209,8 @@ function boot() {
 				player.launch(TUNING.geyserLaunchVelocity);
 				particles.puffGeyser(landedPlatform.x, landedPlatform.y + TUNING.platformHeight / 2);
 				audio.geyser();
+			} else if (effect === 'ice') {
+				player.drop();
 			}
 		}
 		depth = Math.max(depth, -cameraY * TUNING.metersPerWorldUnit);

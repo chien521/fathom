@@ -129,6 +129,10 @@ class Platform {
 		return this.y + Math.tan(rotation) * (playerX - this.x) + TUNING.platformHeight / (2 * Math.cos(rotation));
 	}
 
+	isLandable() {
+		return this.type !== 'ice' || this.crumbleTime === 0;
+	}
+
 	isUnder(playerX, playerWidth) {
 		return Math.abs(playerX - this.x) <= (this.width + playerWidth) / 2;
 	}
