@@ -109,7 +109,7 @@ function boot() {
 		player.reset();
 		platforms.reset();
 		particles.reset();
-		const hint = isTouchDevice ? 'SWIPE LEFT / RIGHT • UP TO JUMP' : 'ARROWS / A / D TO STEER • UP TO JUMP';
+		const hint = isTouchDevice ? 'KEEP SWIPING LEFT / RIGHT • UP TO JUMP' : 'ARROWS / A / D TO STEER • UP TO JUMP';
 		ui.showRun(depth, false, showControlHint ? hint : '', togglePause, startRun);
 	}
 
@@ -197,7 +197,7 @@ function boot() {
 		const landedPlatform = player.update(
 			deltaSeconds,
 			input.getDirection(),
-			input.consumeMobileStep(),
+			0,
 			input.consumeJumpPress(),
 			input.isFastFalling(),
 			input.consumeFastFallPresses(),

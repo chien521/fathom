@@ -5,9 +5,7 @@ export class Input {
 		this.direction = 0;
 		this.keys = new Set();
 		this.touchDirection = 0;
-		this.mobileStepDirection = 0;
-		this.mobileHoldDirection = 0;
-		this.mobileHoldTimer = 0;
+		this.mobileMotionTimer = 0;
 		this.gesturePointerId = null;
 		this.gestureStartX = 0;
 		this.gestureStartY = 0;
@@ -23,7 +21,7 @@ export class Input {
 		element.addEventListener('pointermove', (event) => this.onPointerMove(event));
 		element.addEventListener('pointerup', (event) => this.onPointerEnd(event));
 		element.addEventListener('pointercancel', (event) => this.onPointerCancel(event));
-		element.addEventListener('lostpointercapture', () => this.cancelMobileMove(this.mobileHoldDirection));
+		element.addEventListener('lostpointercapture', () => this.cancelMobileMove());
 	}
 
 	onKeyDown(event) {
@@ -59,32 +57,42 @@ export class Input {
 	}
 
 	onPointerMove(event) {
-		if (event.pointerId !== this.gesturePointerId || this.gestureType !== 'pending') return;
+		if (event.pointerId !== this.gesturePointerId) return;
 		event.preventDefault();
 		const horizontalDistance = event.clientX - this.gestureStartX;
 		const verticalDistance = event.clientY - this.gestureStartY;
-		if (Math.max(Math.abs(horizontalDistance), Math.abs(verticalDistance)) < TUNING.mobileSwipeThreshold) return;
-		if (Math.abs(horizontalDistance) > Math.abs(verticalDistance)) {
-			this.gestureType = 'horizontal';
-			this.startMobileMove(Math.sign(horizontalDistance));
+		if (this.gestureType === 'pending') {
+			if (Math.max(Math.abs(horizontalDistance), Math.abs(verticalDistance)) < TUNING.mobileSwipeThreshold) return;
+			if (Math.abs(horizontalDistance) > Math.abs(verticalDistance)) {
+				this.gestureType = 'horizontal';
+				this.startMobileMove(Math.sign(horizontalDistance));
+				this.gestureStartX = event.clientX;
+				return;
+			}
+			this.gestureType = 'vertical';
+			if (verticalDistance < 0) this.tapMobileJump();
+			else this.tapMobileFastFall();
 			return;
 		}
-		this.gestureType = 'vertical';
-		if (verticalDistance < 0) this.tapMobileJump();
-		else this.tapMobileFastFall();
+		if (this.gestureType === 'horizontal') {
+			const horizontalDelta = event.clientX - this.gestureStartX;
+			if (Math.abs(horizontalDelta) < TUNING.mobileSwipeThreshold) return;
+			this.startMobileMove(Math.sign(horizontalDelta));
+			this.gestureStartX = event.clientX;
+		}
 	}
 
 	onPointerEnd(event) {
 		if (event.pointerId !== this.gesturePointerId) return;
 		event.preventDefault();
-		if (this.gestureType === 'horizontal') this.endMobileMove(this.mobileHoldDirection);
+		this.endMobileMove();
 		this.gesturePointerId = null;
 		this.gestureType = '';
 	}
 
 	onPointerCancel(event) {
 		if (event.pointerId !== this.gesturePointerId) return;
-		this.cancelMobileMove(this.mobileHoldDirection);
+		this.cancelMobileMove();
 		this.gesturePointerId = null;
 		this.gestureType = '';
 	}
@@ -97,12 +105,6 @@ export class Input {
 
 	getDirection() {
 		return this.direction || this.touchDirection;
-	}
-
-	consumeMobileStep() {
-		const direction = this.mobileStepDirection;
-		this.mobileStepDirection = 0;
-		return direction;
 	}
 
 	isFastFalling() {
@@ -123,28 +125,22 @@ export class Input {
 
 	startMobileMove(direction) {
 		this.onControlInput();
-		this.mobileHoldDirection = direction;
-		clearTimeout(this.mobileHoldTimer);
-		this.mobileHoldTimer = window.setTimeout(() => {
-			if (this.mobileHoldDirection === direction) this.touchDirection = direction;
-		}, TUNING.mobileHoldDelay);
+		this.touchDirection = direction;
+		clearTimeout(this.mobileMotionTimer);
+		this.mobileMotionTimer = window.setTimeout(() => {
+			this.touchDirection = 0;
+		}, TUNING.mobileSwipeMotionTimeout);
 	}
 
-	endMobileMove(direction) {
-		if (this.mobileHoldDirection !== direction) return;
-		const wasWalking = this.touchDirection === direction;
-		clearTimeout(this.mobileHoldTimer);
-		this.mobileHoldTimer = 0;
-		this.mobileHoldDirection = 0;
+	endMobileMove() {
+		clearTimeout(this.mobileMotionTimer);
+		this.mobileMotionTimer = 0;
 		this.touchDirection = 0;
-		if (!wasWalking) this.mobileStepDirection = direction;
 	}
 
-	cancelMobileMove(direction) {
-		if (this.mobileHoldDirection !== direction) return;
-		clearTimeout(this.mobileHoldTimer);
-		this.mobileHoldTimer = 0;
-		this.mobileHoldDirection = 0;
+	cancelMobileMove() {
+		clearTimeout(this.mobileMotionTimer);
+		this.mobileMotionTimer = 0;
 		this.touchDirection = 0;
 	}
 

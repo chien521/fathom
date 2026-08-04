@@ -13,7 +13,7 @@ export const TUNING = Object.freeze({
 	fastFallAcceleration: 28,
 	fastFallPressImpulse: 2.5,
 	mobileStepDistance: 0.65,
-	mobileHoldDelay: 180,
+	mobileSwipeMotionTimeout: 120,
 	mobileSwipeThreshold: 18,
 	mobileFastFallPressCount: 2,
 	maxFallVelocity: 18,
