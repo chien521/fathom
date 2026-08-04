@@ -129,7 +129,7 @@ export class GameUI {
 		this.hud = null;
 		this.pauseMessage = null;
 		this.flash = null;
-		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="text-align:center;max-width:280px"><h2 style="margin:0;color:${PALETTE.uiAccent};font-size:30px">RECORDS</h2>${content}<button data-action="back" style="${secondaryButtonStyle}">back</button></section></div>`;
+		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="box-sizing:border-box;min-width:280px;max-width:320px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center"><h2 style="margin:0;color:${PALETTE.uiAccent};font-size:30px">RECORDS</h2>${content}<button data-action="back" style="${secondaryButtonStyle}">back</button></section></div>`;
 		this.root.querySelector('[data-action="back"]').addEventListener('click', onBack);
 	}
 }
