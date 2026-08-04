@@ -114,7 +114,7 @@ function boot() {
 		player.reset();
 		platforms.reset();
 		particles.reset();
-		const hint = isTouchDevice ? 'KEEP SWIPING LEFT / RIGHT • UP TO JUMP' : 'ARROWS / A / D TO STEER • UP TO JUMP';
+		const hint = isTouchDevice ? 'keep swiping left / right • up to jump' : 'arrows / a / d to steer • up to jump';
 		ui.showRun(depth, stairs, false, showControlHint ? hint : '', togglePause, startRun);
 	}
 

@@ -63,7 +63,7 @@ export class GameUI {
 	showRun(depth, stairs, paused, controlHint, onResume, onRestart) {
 		if (!this.hud) {
 			const hint = controlHint ? `<div data-hint style="position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:14px;text-align:center;white-space:nowrap;text-shadow:2px 2px ${PALETTE.uiPanel}">${escapeHtml(controlHint)}</div>` : '';
-			this.root.innerHTML = `<div data-hud style="font-size:22px;white-space:pre-line"></div><button data-action="pause" type="button" aria-label="Pause" title="Pause" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:48px;height:48px;padding:0;border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:26px;line-height:1;pointer-events:auto">||</button><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">PAUSED</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
+			this.root.innerHTML = `<div data-hud style="font-size:22px;white-space:pre-line"></div><button data-action="pause" type="button" aria-label="Pause" title="Pause" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:48px;height:48px;padding:0;border:2px solid ${PALETTE.uiText};background:#ffffff;color:${PALETTE.uiText};font-family:Georgia, 'Times New Roman', serif;font-size:26px;line-height:1;pointer-events:auto">||</button><div data-flash style="position:absolute;inset:0;background:${PALETTE.uiAccent};opacity:0"></div><div data-pause style="position:absolute;inset:0;display:none;place-items:center;background:rgba(44, 50, 56, 0.3);pointer-events:auto"><section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">paused</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section></div>${hint}`;
 			this.hud = this.root.querySelector('[data-hud]');
 			this.flash = this.root.querySelector('[data-flash]');
 			this.pauseMessage = this.root.querySelector('[data-pause]');
@@ -81,13 +81,13 @@ export class GameUI {
 	}
 
 	showRestartConfirmation(onResume, onRestart) {
-		this.pauseMessage.innerHTML = `<section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">RESTART?</h2><p style="margin:12px 0 20px">restart this dive?</p><p style="margin:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="confirm-restart" style="${primaryButtonStyle}">restart</button><button data-action="back" style="${secondaryButtonStyle}">back</button></p></section>`;
+		this.pauseMessage.innerHTML = `<section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">restart?</h2><p style="margin:12px 0 20px">restart this dive?</p><p style="margin:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="confirm-restart" style="${primaryButtonStyle}">restart</button><button data-action="back" style="${secondaryButtonStyle}">back</button></p></section>`;
 		this.pauseMessage.querySelector('[data-action="confirm-restart"]').addEventListener('click', onRestart);
 		this.pauseMessage.querySelector('[data-action="back"]').addEventListener('click', () => this.showPauseActions(onResume, onRestart));
 	}
 
 	showPauseActions(onResume, onRestart) {
-		this.pauseMessage.innerHTML = `<section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">PAUSED</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section>`;
+		this.pauseMessage.innerHTML = `<section style="${pausePanelStyle}"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">paused</h2><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="resume" style="${primaryButtonStyle}">resume</button><button data-action="restart" style="${secondaryButtonStyle}">restart</button></p></section>`;
 		this.pauseMessage.querySelector('[data-action="resume"]').addEventListener('click', onResume);
 		this.pauseMessage.querySelector('[data-action="restart"]').addEventListener('click', () => this.showRestartConfirmation(onResume, onRestart));
 	}
@@ -96,7 +96,7 @@ export class GameUI {
 		if ((this.depth === depth && this.stairs === stairs) || !this.hud) return;
 		this.depth = depth;
 		this.stairs = stairs;
-		this.hud.textContent = `DEPTH ${depth}m\nSTAIRS ${stairs}`;
+		this.hud.textContent = `depth ${depth}m\nstairs ${stairs}`;
 	}
 
 	flashMilestone() {
@@ -116,7 +116,7 @@ export class GameUI {
 		const connectLabel = viverseState?.status === 'logged_in' ? 'viverse connected' : 'connect viverse';
 		const submit = viverseState?.status === 'logged_in' ? `<button data-action="submit" style="${secondaryButtonStyle}">submit score</button>` : '';
 		const message = submissionMessage ? `<p style="color:${PALETTE.uiMuted}">${escapeHtml(submissionMessage)}</p>` : '';
-		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section data-game-over-panel style="box-sizing:border-box;min-width:280px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center;opacity:0;transition:opacity 220ms ease-out"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">DIVE OVER</h2><p>DEPTH ${depth}m, STAIRS ${stairs}</p><p>EXPLORER SCORE ${explorerScore}</p><section style="margin:14px 0;color:#000000"><h3 style="margin:0 0 6px;font-size:16px;font-weight:normal">personal best</h3><p style="margin:0;line-height:1.5">depth score ${best}m<br>explorer score ${bestExplorerScore}</p></section><p style="margin:12px 0 20px">tap / press space to dive again</p><button data-action="dive" style="${primaryButtonStyle}">dive again</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button>${submit}<button data-action="records" style="${secondaryButtonStyle}">records</button></p>${message}</section></div>`;
+		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section data-game-over-panel style="box-sizing:border-box;min-width:280px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center;opacity:0;transition:opacity 220ms ease-out"><h2 style="margin:0;color:${PALETTE.uiText};font-size:34px">DIVE OVER</h2><p>depth ${depth}m, stairs ${stairs}</p><p>explorer score ${explorerScore}</p><section style="margin:14px 0;color:#000000"><h3 style="margin:0 0 6px;font-size:16px;font-weight:normal">personal best</h3><p style="margin:0;line-height:1.5">depth score ${best}m<br>explorer score ${bestExplorerScore}</p></section><p style="margin:12px 0 20px">tap / press space to dive again</p><button data-action="dive" style="${primaryButtonStyle}">dive again</button><p style="margin:18px 0 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button data-action="viverse" style="${secondaryButtonStyle}">${connectLabel}</button>${submit}<button data-action="records" style="${secondaryButtonStyle}">records</button></p>${message}</section></div>`;
 		this.root.querySelector('[data-action="dive"]').addEventListener('click', onDive);
 		this.root.querySelector('[data-action="viverse"]').addEventListener('click', onConnect);
 		this.root.querySelector('[data-action="records"]').addEventListener('click', onRecords);
@@ -135,7 +135,7 @@ export class GameUI {
 		this.hud = null;
 		this.pauseMessage = null;
 		this.flash = null;
-		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="box-sizing:border-box;min-width:280px;max-width:320px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center"><h2 style="margin:0;color:${PALETTE.uiAccent};font-size:30px">RECORDS</h2>${content}<button data-action="back" style="${secondaryButtonStyle}">back</button></section></div>`;
+		this.root.innerHTML = `<div style="height:100%;display:grid;place-items:center;pointer-events:auto"><section style="box-sizing:border-box;min-width:280px;max-width:320px;padding:24px;background:#ffffff;border:1px solid ${PALETTE.uiText};text-align:center"><h2 style="margin:0;color:${PALETTE.uiAccent};font-size:30px">records</h2>${content}<button data-action="back" style="${secondaryButtonStyle}">back</button></section></div>`;
 		this.root.querySelector('[data-action="back"]').addEventListener('click', onBack);
 	}
 }

@@ -235,8 +235,8 @@ export class ViverseSession {
 
 	async getLeaderboards() {
 		const configurations = [
-			{ label: 'DEEPEST DEPTH', name: this.leaderboardName, unit: 'm' },
-			{ label: 'EXPLORER SCORE', name: this.explorerLeaderboardName, unit: '' },
+			{ label: 'deepest depth', name: this.leaderboardName, unit: 'm' },
+			{ label: 'explorer score', name: this.explorerLeaderboardName, unit: '' },
 		].filter((configuration) => configuration.name);
 		if (configurations.length === 0) return { leaderboards: [], message: 'Records need VIVERSE leaderboard setup.' };
 		const leaderboards = await Promise.all(configurations.map(async (configuration) => ({
